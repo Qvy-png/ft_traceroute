@@ -8,7 +8,8 @@ RM = rm
 
 OBJ = $(SRC:.c=.o)
 
-SRC =	srcs/main.c
+SRC =	srcs/main.c \
+		srcs/utils.c
 		
 INCL =	includes/ft_traceroute.h
 
