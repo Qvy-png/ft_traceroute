@@ -117,7 +117,7 @@ int main(int argc, char *argv[])	{
     for (int ttl = 1; ttl <= MAX_TTL; ttl++)	{
 
         struct timeval start_time, end_time;
-        int successful_probes = 0;
+        // int successful_probes = 0;
         char ip_addresses[NUM_PROBES][INET_ADDRSTRLEN];
         double rtts[NUM_PROBES];
 
@@ -165,7 +165,7 @@ int main(int argc, char *argv[])	{
                     gettimeofday(&end_time, NULL);
                     double rtt = (double) ((end_time.tv_sec * 1000000 + end_time.tv_usec) - (start_time.tv_sec * 1000000 + start_time.tv_usec)) / 1000.0;
                     rtts[probe] = rtt;
-                    successful_probes++;
+                    // successful_probes++;
 
                     // Store IP address for later use
                     inet_ntop(AF_INET, &recv_addr.sin_addr, ip_addresses[probe], sizeof(ip_addresses[probe]));
