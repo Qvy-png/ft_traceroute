@@ -77,6 +77,8 @@ int main(int argc, char *argv[])	{
     int udp_sock, icmp_sock;
     struct sockaddr_in dest_addr;
     char ip_str[INET_ADDRSTRLEN];
+    char host[NI_MAXHOST];
+
 
     // Resolve destination
     memset(&hints, 0, sizeof(hints));
@@ -159,10 +161,10 @@ int main(int argc, char *argv[])	{
                 ssize_t len = recvfrom(icmp_sock, buf, sizeof(buf), 0, (struct sockaddr *)&recv_addr, &addr_len);
                 if (len > 0)	{
 
-                    char host[NI_MAXHOST];
                     if (getnameinfo((struct sockaddr *)&recv_addr, addr_len, host, sizeof(host), NULL, 0, 0) != 0)
                         strncpy(host, "unknown", sizeof(host));
                     gettimeofday(&end_time, NULL);
+                    // printf("THIS IS THE HOST : %s\n", host);
                     double rtt = (double) ((end_time.tv_sec * 1000000 + end_time.tv_usec) - (start_time.tv_sec * 1000000 + start_time.tv_usec)) / 1000.0;
                     rtts[probe] = rtt;
                     // successful_probes++;
