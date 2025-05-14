@@ -77,8 +77,7 @@ int main(int argc, char *argv[])	{
     int udp_sock, icmp_sock;
     struct sockaddr_in dest_addr;
     char ip_str[INET_ADDRSTRLEN];
-    char host[NI_MAXHOST];
-
+    char host[NUM_PROBES][512];
 
     // Resolve destination
     memset(&hints, 0, sizeof(hints));
@@ -161,11 +160,12 @@ int main(int argc, char *argv[])	{
                 ssize_t len = recvfrom(icmp_sock, buf, sizeof(buf), 0, (struct sockaddr *)&recv_addr, &addr_len);
                 if (len > 0)	{
 
-                    if (getnameinfo((struct sockaddr *)&recv_addr, addr_len, host, sizeof(host), NULL, 0, 0) != 0)
-                        strncpy(host, "unknown", sizeof(host));
+                    if (getnameinfo((struct sockaddr *)&recv_addr, addr_len, host[probe], sizeof(host[probe]), NULL, 0, 0) != 0)
+                        strncpy(host[probe], "unknown", sizeof(host[probe]));
                     gettimeofday(&end_time, NULL);
-                    // printf("THIS IS THE HOST : %s\n", host);
-                    double rtt = (double) ((end_time.tv_sec * 1000000 + end_time.tv_usec) - (start_time.tv_sec * 1000000 + start_time.tv_usec)) / 1000.0;
+                    //if (strcmp(host[probe], host[ttl-1]) == 0)
+			//break;
+		    double rtt = (double) ((end_time.tv_sec * 1000000 + end_time.tv_usec) - (start_time.tv_sec * 1000000 + start_time.tv_usec)) / 1000.0;
                     rtts[probe] = rtt;
                     // successful_probes++;
 
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])	{
 
             if (rtts[probe] >= 0)	{
 
-                printf("%s (%s)  %.2f ms", (probe == 0) ? ip_addresses[probe] : "", ip_addresses[probe], rtts[probe]);
+                printf("%s (%s)  %.2f ms", (probe == 0) ? host[probe] : "", ip_addresses[probe], rtts[probe]);
             } else	{
 
                 printf("*");
