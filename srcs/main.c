@@ -17,37 +17,6 @@
 // 	ft_putstr("Usage:\n  traceroute host\n");
 // }
 
-// void	init_struct(struct s_traceroute *tr)
-// {
-// 	tr->rtt_result[0] = 0;
-// 	tr->rtt_result[1] = 0;
-// 	tr->rtt_result[2] = 0;
-// }
-
-// void    launch(struct s_traceroute *tr)
-// {
-// 	(void)tr;
-// 	//all the ms shows the 3 attempts done per TTL to show consistency
-// }
-
-// int     main(int argc, char **argv)
-// {
-// 	struct s_traceroute	*tr;
-
-// 	tr = malloc(sizeof(struct s_traceroute));
-// 	if (argc == 1 || ft_search_help(argv))
-// 		print_help();        
-// 	else if (argc == 2 && !ft_search_help(argv))
-// 	{
-// 		init_struct(tr);
-// 		launch(tr);
-// 	}
-// 	else
-// 		print_help();
-// 	return (0);
-// }
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,9 +30,37 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+#define BLK "\e[0;30m"
+#define RED "\e[0;31m"
+#define GRN "\e[0;32m"
+#define YEL "\e[0;33m"
+#define BLU "\e[0;34m"
+#define MAG "\e[0;35m"
+#define CYN "\e[0;36m"
+#define WHT "\e[0;37m"
+#define CLR "\e[0m"
+
 #define MAX_TTL 30
 #define TIMEOUT_SEC 1
 #define NUM_PROBES 3
+
+void    s_cpy(char *dst, char *str)
+{
+    int i;
+
+    i = -1;
+    while (str[++i])
+        dst[i] = str[i];
+}
+
+void    s_clr_addr(char *str)
+{
+    int i;
+
+    i = -1;
+    while (++i < INET_ADDRSTRLEN)
+        str[i] = '\0';
+}
 
 int main(int argc, char *argv[])	{
 
@@ -78,6 +75,10 @@ int main(int argc, char *argv[])	{
     struct sockaddr_in dest_addr;
     char ip_str[INET_ADDRSTRLEN];
     char host[NUM_PROBES][512];
+
+    char    prev_address[INET_ADDRSTRLEN];
+
+    s_clr_addr(prev_address);
 
     // Resolve destination
     memset(&hints, 0, sizeof(hints));
@@ -117,11 +118,11 @@ int main(int argc, char *argv[])	{
 
     for (int ttl = 1; ttl <= MAX_TTL; ttl++)	{
 
-        struct timeval start_time, end_time;
+        struct  timeval start_time, end_time;
         // int successful_probes = 0;
-        char ip_addresses[NUM_PROBES][INET_ADDRSTRLEN];
-        double rtts[NUM_PROBES];
-
+        char    ip_addresses[NUM_PROBES][INET_ADDRSTRLEN];
+        double  rtts[NUM_PROBES];
+        
 		// does 3 "pings" to target host
         for (int probe = 0; probe < NUM_PROBES; probe++)	{
 			
@@ -179,6 +180,22 @@ int main(int argc, char *argv[])	{
             }
         }
 
+        int cmp_ret;
+        cmp_ret = strcmp(prev_address, ip_addresses[0]);
+        // printf("This is CMP_RET : %d\n", cmp_ret);
+        if ( cmp_ret == 0 && prev_address[0] != '*')
+        {
+            // printf("HELLO THERE YOU SHOULD GO AWAY \n");
+            break;
+        }
+        printf("%s", RED);
+        // printf("This is the prev_address : %s\n", prev_address);
+        // printf("This is the ip_addresses[0] : %s\n", ip_addresses[0]);
+        printf("%s", CLR);
+        s_clr_addr(prev_address);
+        s_cpy(prev_address, ip_addresses[0]);
+        prev_address[ft_strlen(ip_addresses[0])+1] = '\0';
+
         // Print hop information
         printf("%2d  ", ttl);
         for (int probe = 0; probe < NUM_PROBES; probe++)	{
@@ -198,9 +215,9 @@ int main(int argc, char *argv[])	{
         printf("\n");
 
         // If the TTL exceeds the maximum value (maximum hops)
-        if (ttl == MAX_TTL) {
+        if (ttl == MAX_TTL)
             break;
-        }
+        // If the TLL is bigger than the target's TTL
     }
 
     // Cleanup
