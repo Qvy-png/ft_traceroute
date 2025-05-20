@@ -75,6 +75,7 @@ int main(int argc, char *argv[])	{
     struct sockaddr_in dest_addr;
     char ip_str[INET_ADDRSTRLEN];
     char host[NUM_PROBES][512];
+    struct timeval              tv_out;
 
     char    prev_address[INET_ADDRSTRLEN];
 
@@ -134,6 +135,10 @@ int main(int argc, char *argv[])	{
                 perror("setsockopt");
                 break;
             }
+            // Set timeout
+            memset(&tv_out, 0, sizeof(tv_out)); // initialize memory of tv_out
+            tv_out.tv_usec = 10; // 1s timout
+            setsockopt(udp_sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv_out, sizeof tv_out);
 
             // Send UDP packet
             unsigned char packet[1] = {0};  // Minimal packet with 1 byte
