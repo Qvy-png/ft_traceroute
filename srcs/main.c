@@ -6,7 +6,7 @@
 /*   By: qvy <qvy@student.42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/12 15:22:49 by rdel-agu          #+#    #+#             */
-/*   Updated: 2025/04/15 22:11:48 by qvy              ###   ########.fr       */
+/*   Updated: 2025/05/20 14:03:59 by qvy              ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,8 @@ int main(int argc, char *argv[])	{
     struct sockaddr_in dest_addr;
     char ip_str[INET_ADDRSTRLEN];
     char host[NUM_PROBES][512];
-    struct timeval              tv_out;
+    // struct timeval              tv_out;
+    int				frag = IP_PMTUDISC_DONT;
 
     char    prev_address[INET_ADDRSTRLEN];
 
@@ -135,10 +136,11 @@ int main(int argc, char *argv[])	{
                 perror("setsockopt");
                 break;
             }
-            // Set timeout
-            memset(&tv_out, 0, sizeof(tv_out)); // initialize memory of tv_out
-            tv_out.tv_usec = 10; // 1s timout
-            setsockopt(udp_sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv_out, sizeof tv_out);
+            // // Set timeout
+            // memset(&tv_out, 0, sizeof(tv_out)); // initialize memory of tv_out
+            // tv_out.tv_usec = 10; // 1s timout
+            // tv_out.tv_sec = 0; // 1s timout
+            // setsockopt(udp_sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv_out, sizeof tv_out);
 
             // Send UDP packet
             unsigned char packet[1] = {0};  // Minimal packet with 1 byte
@@ -148,13 +150,17 @@ int main(int argc, char *argv[])	{
                 break;
             }
 
+            if (setsockopt(udp_sock, IPPROTO_IP, IP_MTU_DISCOVER, &frag, sizeof(frag)) != 0) {
+                return -2;
+            }
+
             // Set up select for receiving ICMP response
             fd_set read_fds;
             struct timeval timeout;
             FD_ZERO(&read_fds);
             FD_SET(icmp_sock, &read_fds);
-            timeout.tv_sec = TIMEOUT_SEC;
-            timeout.tv_usec = 0;
+            timeout.tv_sec = 0;
+            timeout.tv_usec = 10000;
 
             // Wait for ICMP response
             int ret = select(icmp_sock + 1, &read_fds, NULL, NULL, &timeout);
